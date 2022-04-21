@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import math
 import re
 import PIL.Image
+from countVariables import missingVariables
 
 value = ''
 p2 = ''
@@ -71,8 +72,6 @@ def coefficients():
         coef[2] = eval(place_holder.split(')**2')[1])
         print(coef)
 
-
-
     return coef
 
 
@@ -85,12 +84,13 @@ class Page(tk.Frame):
         self.lift()
 
 
-
 class Page1(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
         global backgroundcolor
-        self.label = tk.Label(self, text="Please enter your equation\n equation MUST follow one of these templates:\n a*x^2+b*x+c\n a*(x-p)^2+q", bg=backgroundcolor)
+        self.label = tk.Label(self,
+                              text="Please enter your equation\n equation MUST follow one of these templates:\n a*x^2+b*x+c\n a*(x-p)^2+q",
+                              bg=backgroundcolor)
         self.label.configure(font=self.myFont)
         self.label.pack(side="top", fill="both", expand=True)
         self.entry1 = tk.Entry(self, bg=backgroundcolor)
@@ -157,8 +157,8 @@ class Page3(Page):
         global value
         if coef[3] is False:
             a = coef[0]
-            b = -2*a*coef[1]
-            c = coef[1]**2*a+coef[2]
+            b = -2 * a * coef[1]
+            c = coef[1] ** 2 * a + coef[2]
         elif coef[3] is True:
             a = coef[0]
             b = coef[1]
@@ -185,15 +185,15 @@ class Page3(Page):
             print(f'Vertex ({p} , {q})')
         try:
             x1 = round(float(x1), 4)
-        except:
+        except Exception:
             pass
         try:
             x2 = round(float(x2), 4)
-        except:
+        except Exception:
             pass
         if self.label_placed is False:
             self.label = tk.Label(self, text=f'x1 = {x1} and x2 = {x2}\n delta = {delta}', bg=backgroundcolor,
-                                      font=self.myFont)
+                                  font=self.myFont)
             self.label.pack(side="top", fill="both", expand=True)
             self.labelVertex = tk.Label(self, text=f'Vertex ({p} , {q})', bg=backgroundcolor, font=self.myFont)
             self.labelVertex.pack(side="top", fill="both", expand=True)
@@ -202,7 +202,7 @@ class Page3(Page):
             self.label.destroy()
             self.labelVertex.destroy()
             self.label = tk.Label(self, text=f'x1 = {x1} and x2 = {x2}\n delta = {delta}', bg=backgroundcolor,
-                                      font=self.myFont)
+                                  font=self.myFont)
             self.label.pack(side="top", fill="both", expand=True)
             self.labelVertex = tk.Label(self, text=f'Vertex ({p} , {q})', bg=backgroundcolor, font=self.myFont)
             self.labelVertex.pack(side="top", fill="both", expand=True)
@@ -213,17 +213,90 @@ class Page4(Page):
         Page.__init__(self, *args, **kwargs)
         self.label = tk.Label(self, text='', bg=backgroundcolor)
         self.label.pack(side="top", fill="both", expand=True)
-        mylist = ['x1', 'x2', 'p', 'q', 'a', 'b', 'c', 'delta', 'x', 'y']
-        for i in mylist:
-            i = i
-            self.i = tk.Entry(self, width=5)
-            self.i.insert(0, i)
-            self.i.bind('<Button-1>', lambda event, entry=self.i:
-                              self.deleteEntry(entry))
-            self.i.pack(side="top")
+        self.givenVariables = {'a': None,
+                               'b': None,
+                               'c': None,
+                               'p': None,
+                               'q': None,
+                               'delta': None,
+                               'x1': None,
+                               'x2': None}
+        mylist = ['x1', 'x2', 'p', 'q', 'a', 'b', 'c', 'delta']
+        if not True:
+            pass
+        else:
+            self.x1 = tk.Entry(self, width=5)
+            self.x1.insert(0, 'x1')
+            self.x1.bind('<Button-1>', lambda event, entry=self.x1:
+            self.deleteEntry(entry))
+            self.x1.bind('<Return>', lambda event, variable=self.x1, name='x1':
+            self.editDict(variable, name))
+            self.x1.pack(side="top")
+
+            self.x2 = tk.Entry(self, width=5)
+            self.x2.insert(0, 'x2')
+            self.x2.bind('<Button-1>', lambda event, entry=self.x2:
+            self.deleteEntry(entry))
+            self.x2.bind('<Return>', lambda event, variable=self.x2, name='x2':
+            self.editDict(variable, name))
+            self.x2.pack(side="top")
+
+            self.p = tk.Entry(self, width=5)
+            self.p.insert(0, 'p')
+            self.p.bind('<Button-1>', lambda event, entry=self.p:
+            self.deleteEntry(entry))
+            self.p.bind('<Return>', lambda event, variable=self.p, name='p':
+            self.editDict(variable, name))
+            self.p.pack(side="top")
+
+            self.q = tk.Entry(self, width=5)
+            self.q.insert(0, 'q')
+            self.q.bind('<Button-1>', lambda event, entry=self.q:
+            self.deleteEntry(entry))
+            self.q.bind('<Return>', lambda event, variable=self.q, name='q':
+            self.editDict(variable, name))
+            self.q.pack(side="top")
+
+            self.a = tk.Entry(self, width=5)
+            self.a.insert(0, 'a')
+            self.a.bind('<Button-1>', lambda event, entry=self.a:
+            self.deleteEntry(entry))
+            self.a.bind('<Return>', lambda event, variable=self.a, name='a':
+            self.editDict(variable, name))
+            self.a.pack(side="top")
+
+            self.b = tk.Entry(self, width=5)
+            self.b.insert(0, 'b')
+            self.b.bind('<Button-1>', lambda event, entry=self.b:
+            self.deleteEntry(entry))
+            self.b.bind('<Return>', lambda event, variable=self.b, name='b':
+            self.editDict(variable, name))
+            self.b.pack(side="top")
+
+            self.c = tk.Entry(self, width=5)
+            self.c.insert(0, 'c')
+            self.c.bind('<Button-1>', lambda event, entry=self.c:
+            self.deleteEntry(entry))
+            self.c.bind('<Return>', lambda event, variable=self.c, name='c':
+            self.editDict(variable, name))
+            self.c.pack(side="top")
+
+            self.delta = tk.Entry(self, width=5)
+            self.delta.insert(0, 'delta')
+            self.delta.bind('<Button-1>', lambda event, entry=self.delta:
+            self.deleteEntry(entry))
+            self.delta.bind('<Return>', lambda event, variable=self.delta, name='delta':
+            self.editDict(variable, name))
+            self.delta.pack(side="top")
 
     def deleteEntry(self, entry):
         entry.delete(0, 'end')
+
+    def editDict(self, variable, data):
+        self.givenVariables[data] = float(variable.get())
+        print(self.givenVariables)
+        result = missingVariables(self.givenVariables)
+        print(result)
 
 
 class PageS(Page):
@@ -307,7 +380,7 @@ class MainView(tk.Frame):
         self.ps.entrycolor.config(bg=color)
         try:
             MainView.overdrawgraph(self, color)
-        except:
+        except Exception:
             self.p2.label.config(bg=color)
 
     def overdrawgraph(self, color):
