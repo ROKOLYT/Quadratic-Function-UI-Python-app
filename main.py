@@ -9,8 +9,6 @@ import PIL.Image
 from MyFunctions import missingVariables, ToBeReplaced, coefficients
 
 value = ''
-p2 = ''
-p3 = ''
 backgroundcolor = "#33b857"
 
 
@@ -37,10 +35,9 @@ class Page1(Page):
         self.entry1.place(x=440, y=200, height=30, width=300)
 
     def onReturn(self, event):
-        global value, p2
+        global value, main
         value = self.entry1.get()
-        # noinspection PyTypeChecker
-        Page2.drawGraph(p2)
+        MainView.drawGraph(main)
 
 
 class Page2(Page):
@@ -55,34 +52,7 @@ class Page2(Page):
         self.fig = plt.figure(facecolor=backgroundcolor, figsize=(14.5, 8.15625))
         self.ax = self.fig.add_subplot(1, 1, 1)
 
-    def drawGraph(self):
-        global value, p3
-        self.x = np.linspace(-10, 10, 300)
-        x = self.x
-        value = ToBeReplaced(value)
-        y = eval(value)
-        self.fig = plt.figure(facecolor=backgroundcolor, figsize=(14.5, 8.15625))
-        self.ax = self.fig.add_subplot(1, 1, 1)
-        self.ax.spines['left'].set_position('center')
-        self.ax.spines['bottom'].set_position('zero')
-        self.ax.spines['right'].set_color('none')
-        self.ax.spines['top'].set_color('none')
-        self.ax.xaxis.set_ticks_position('bottom')
-        self.ax.yaxis.set_ticks_position('left')
-        self.ax.set_facecolor(backgroundcolor)
 
-        plt.plot(x, y)
-        plt.grid()
-        graph = FigureCanvasTkAgg(self.fig, master=self)
-        graph.draw()
-        graph.get_tk_widget().place(in_=self, x=-150, y=-50)
-        self.graph = graph
-        self.coef = coefficients(value)
-        # noinspection PyTypeChecker
-        Page3.answers(p3, self.coef)
-
-
-# noinspection PyBroadException
 class Page3(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
@@ -92,60 +62,6 @@ class Page3(Page):
         self.labelVertex = tk.Label()
         self.label_placed = False
 
-    def answers(self, coef):
-        global value
-        if coef[3] is False:
-            a = coef[0]
-            b = -2 * a * coef[1]
-            c = coef[1] ** 2 * a + coef[2]
-        elif coef[3] is True:
-            a = coef[0]
-            b = coef[1]
-            c = coef[2]
-        delta = b ** 2 - 4 * a * c
-        if delta > 0:
-            x1 = (-b - math.sqrt(delta)) / (2 * a)
-            x2 = (-b + math.sqrt(delta)) / (2 * a)
-            p = (x1 + x2) / 2
-            q = (-delta) / (4 * a)
-            print(f'Vertex ({p} , {q})')
-        elif delta == 0:
-            x1 = (-b) / (2 * a)
-            x2 = 'n/a'
-            p = x1
-            q = (-delta) / (4 * a)
-            print(f'Vertex ({p} , {q})')
-
-        else:
-            x1 = 'n/a'
-            x2 = 'n/a'
-            p = (-b) / (2 * a)
-            q = (-delta) / (4 * a)
-            print(f'Vertex ({p} , {q})')
-        try:
-            x1 = round(float(x1), 4)
-        except Exception:
-            pass
-        try:
-            x2 = round(float(x2), 4)
-        except Exception:
-            pass
-        if self.label_placed is False:
-            self.label = tk.Label(self, text=f'x1 = {x1} and x2 = {x2}\n delta = {delta}', bg=backgroundcolor,
-                                  font=self.myFont)
-            self.label.pack(side="top", fill="both", expand=True)
-            self.labelVertex = tk.Label(self, text=f'Vertex ({p} , {q})', bg=backgroundcolor, font=self.myFont)
-            self.labelVertex.pack(side="top", fill="both", expand=True)
-            self.label_placed = True
-        else:
-            self.label.destroy()
-            self.labelVertex.destroy()
-            self.label = tk.Label(self, text=f'x1 = {x1} and x2 = {x2}\n delta = {delta}', bg=backgroundcolor,
-                                  font=self.myFont)
-            self.label.pack(side="top", fill="both", expand=True)
-            self.labelVertex = tk.Label(self, text=f'Vertex ({p} , {q})', bg=backgroundcolor, font=self.myFont)
-            self.labelVertex.pack(side="top", fill="both", expand=True)
-
 
 class Page4(Page):
     def __init__(self, *args, **kwargs):
@@ -154,9 +70,9 @@ class Page4(Page):
         self.label.pack(side="top", fill="both", expand=True)
         self.givenVariables = {}
         self.namesInDict = dict.fromkeys(['a', 'b', 'c', 'p', 'q', 'x1', 'x2', 'delta'])
-        self.CreateButtonForCalculatingUnknowns()
+        self.CreateEntriesForDataInput()
 
-    def CreateButtonForCalculatingUnknowns(self):
+    def CreateEntriesForDataInput(self):
         for k in self.namesInDict:
             self.namesInDict[k] = tk.Entry(self, width=5)
             self.namesInDict[k].insert(0, str(k))
@@ -201,7 +117,6 @@ class PageS(Page):
 
 class MainView(tk.Frame):
     def __init__(self, *args, **kwargs):
-        global p2, p3
         tk.Frame.__init__(self, *args, **kwargs)
         p = Page(self)
         p1 = Page1(self)
@@ -252,8 +167,61 @@ class MainView(tk.Frame):
         bs.pack(side="bottom")
         p1.show()
 
+    def answers(self, coef):
+        global value
+        if coef[3] is False:
+            a = coef[0]
+            b = -2 * a * coef[1]
+            c = coef[1] ** 2 * a + coef[2]
+        else:
+            a = coef[0]
+            b = coef[1]
+            c = coef[2]
+        delta = b ** 2 - 4 * a * c
+        if delta > 0:
+            x1 = (-b - math.sqrt(delta)) / (2 * a)
+            x2 = (-b + math.sqrt(delta)) / (2 * a)
+            p = (x1 + x2) / 2
+            q = (-delta) / (4 * a)
+            print(f'Vertex ({p} , {q})')
+        elif delta == 0:
+            x1 = (-b) / (2 * a)
+            x2 = 'n/a'
+            p = x1
+            q = (-delta) / (4 * a)
+            print(f'Vertex ({p} , {q})')
+
+        else:
+            x1 = 'n/a'
+            x2 = 'n/a'
+            p = (-b) / (2 * a)
+            q = (-delta) / (4 * a)
+            print(f'Vertex ({p} , {q})')
+        try:
+            x1 = round(float(x1), 4)
+        except Exception:
+            pass
+        try:
+            x2 = round(float(x2), 4)
+        except Exception:
+            pass
+        if self.p3.label_placed is False:
+            self.p3.label = tk.Label(self.p3, text=f'x1 = {x1} and x2 = {x2}\n delta = {delta}', bg=backgroundcolor,
+                                     font=self.p.myFont)
+            self.p3.label.pack(side="top", fill="both", expand=True)
+            self.p3.labelVertex = tk.Label(self.p3, text=f'Vertex ({p} , {q})', bg=backgroundcolor, font=self.p.myFont)
+            self.p3.labelVertex.pack(side="top", fill="both", expand=True)
+            self.p3.label_placed = True
+        else:
+            self.p3.label.destroy()
+            self.p3.labelVertex.destroy()
+            self.p3.label = tk.Label(self.p3, text=f'x1 = {x1} and x2 = {x2}\n delta = {delta}', bg=backgroundcolor,
+                                     font=self.p.myFont)
+            self.p3.label.pack(side="top", fill="both", expand=True)
+            self.p3.labelVertex = tk.Label(self.p3, text=f'Vertex ({p} , {q})', bg=backgroundcolor, font=self.p.myFont)
+            self.p3.labelVertex.pack(side="top", fill="both", expand=True)
+
     def changecolor(self, color):
-        global root
         self.p1.label.config(bg=color)
         self.p1.entry1.config(bg=color)
         self.p3.label0.config(bg=color)
@@ -267,7 +235,7 @@ class MainView(tk.Frame):
             self.p2.label.config(bg=color)
 
     def overdrawgraph(self, color):
-        global value, p3
+        global value
         self.p2.x = np.linspace(-10, 10, 300)
         x = self.p2.x
         value = ToBeReplaced(value)
@@ -286,6 +254,32 @@ class MainView(tk.Frame):
         graph = FigureCanvasTkAgg(self.p2.fig, master=self.p2)
         graph.draw()
         graph.get_tk_widget().place(in_=self.p2, x=-150, y=-50)
+
+    def drawGraph(self):
+        global value, main
+        self.p2.x = np.linspace(-10, 10, 300)
+        x = self.p2.x
+        value = ToBeReplaced(value)
+        y = eval(value)
+        self.p2.fig = plt.figure(facecolor=backgroundcolor, figsize=(14.5, 8.15625))
+        self.p2.ax = self.p2.fig.add_subplot(1, 1, 1)
+        self.p2.ax.spines['left'].set_position('center')
+        self.p2.ax.spines['bottom'].set_position('zero')
+        self.p2.ax.spines['right'].set_color('none')
+        self.p2.ax.spines['top'].set_color('none')
+        self.p2.ax.xaxis.set_ticks_position('bottom')
+        self.p2.ax.yaxis.set_ticks_position('left')
+        self.p2.ax.set_facecolor(backgroundcolor)
+
+        plt.plot(x, y)
+        plt.grid()
+        graph = FigureCanvasTkAgg(self.p2.fig, master=self.p2)
+        graph.draw()
+        graph.get_tk_widget().place(in_=self.p2, x=-150, y=-50)
+        self.p2.graph = graph
+        self.p2.coef = coefficients(value)
+        # noinspection PyTypeChecker
+        MainView.answers(main, self.p2.coef)
 
 
 if __name__ == "__main__":
