@@ -5,74 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import math
-import re
 import PIL.Image
-from countVariables import missingVariables
+from MyFunctions import missingVariables, ToBeReplaced, coefficients
 
 value = ''
 p2 = ''
 p3 = ''
 backgroundcolor = "#33b857"
-
-
-def ToBeReplaced(string):
-    disallowed_characters = ['sqrt', '^', ':']
-    equivalent = ['math.sqrt', '**', '/']
-    string = string.strip()
-    for i in range(len(disallowed_characters)):
-        string = string.replace(disallowed_characters[i], equivalent[i])
-    return string
-
-
-# noinspection PyBroadException
-def coefficients():
-    global value
-    place_holder = value
-    coef = ['', '', '', False]
-    if 'x**2' in place_holder:
-        # noinspection PyBroadException
-        try:
-            coef[1] = re.search(r'xffffff2(.*)fffx', place_holder.replace('*', 'fff'))
-            coef[1] = coef[1].group(1).replace('fff', '*')
-        except:
-            pass
-        if coef[1] is None:
-            coef[1] = '1'
-        if '*x' not in place_holder or len(place_holder.split('*x')) == 2:
-            coef[1] = '0'
-
-        # noinspection PyBroadException
-        try:
-            coef[0] = place_holder.split('*x**')[0]
-            if coef[0] == place_holder:
-                coef[0] = '1'
-        except:
-            coef[0] = '1'
-        try:
-            coef[2] = place_holder.split('*x')[2]
-        except:
-            try:
-                coef[2] = place_holder.split('*x')[1]
-                if '**' in coef[2] and coef[1] != '0':
-                    coef[2] = '0'
-                else:
-                    coef[2] = coef[2].replace('**2', '')
-
-            except:
-                coef[2] = '0'
-        print(coef)
-        for i in range(3):
-            coef[i] = eval(coef[i])
-        coef[3] = True
-    elif ')**2' in place_holder:
-        coef[0] = eval(place_holder.split('*(x')[0])
-        coef[1] = re.search(r'x(.*)bracketffffff2', place_holder.replace('*', 'fff').replace(')', 'bracket'))
-        coef[1] = eval(coef[1].group(1))
-        coef[1] = -coef[1]
-        coef[2] = eval(place_holder.split(')**2')[1])
-        print(coef)
-
-    return coef
 
 
 class Page(tk.Frame):
@@ -138,7 +77,7 @@ class Page2(Page):
         graph.draw()
         graph.get_tk_widget().place(in_=self, x=-150, y=-50)
         self.graph = graph
-        self.coef = coefficients()
+        self.coef = coefficients(value)
         # noinspection PyTypeChecker
         Page3.answers(p3, self.coef)
 
@@ -213,81 +152,19 @@ class Page4(Page):
         Page.__init__(self, *args, **kwargs)
         self.label = tk.Label(self, text='', bg=backgroundcolor)
         self.label.pack(side="top", fill="both", expand=True)
-        self.givenVariables = {'a': None,
-                               'b': None,
-                               'c': None,
-                               'p': None,
-                               'q': None,
-                               'delta': None,
-                               'x1': None,
-                               'x2': None}
-        mylist = ['x1', 'x2', 'p', 'q', 'a', 'b', 'c', 'delta']
-        if not True:
-            pass
-        else:
-            self.x1 = tk.Entry(self, width=5)
-            self.x1.insert(0, 'x1')
-            self.x1.bind('<Button-1>', lambda event, entry=self.x1:
-            self.deleteEntry(entry))
-            self.x1.bind('<Return>', lambda event, variable=self.x1, name='x1':
-            self.editDict(variable, name))
-            self.x1.pack(side="top")
+        self.givenVariables = {}
+        self.namesInDict = dict.fromkeys(['a', 'b', 'c', 'p', 'q', 'x1', 'x2', 'delta'])
+        self.CreateButtonForCalculatingUnknowns()
 
-            self.x2 = tk.Entry(self, width=5)
-            self.x2.insert(0, 'x2')
-            self.x2.bind('<Button-1>', lambda event, entry=self.x2:
+    def CreateButtonForCalculatingUnknowns(self):
+        for k in self.namesInDict:
+            self.namesInDict[k] = tk.Entry(self, width=5)
+            self.namesInDict[k].insert(0, str(k))
+            self.namesInDict[k].bind('<Button-1>', lambda event, entry=self.namesInDict[k]:
             self.deleteEntry(entry))
-            self.x2.bind('<Return>', lambda event, variable=self.x2, name='x2':
+            self.namesInDict[k].bind('<Return>', lambda event, variable=self.namesInDict[k], name=str(k):
             self.editDict(variable, name))
-            self.x2.pack(side="top")
-
-            self.p = tk.Entry(self, width=5)
-            self.p.insert(0, 'p')
-            self.p.bind('<Button-1>', lambda event, entry=self.p:
-            self.deleteEntry(entry))
-            self.p.bind('<Return>', lambda event, variable=self.p, name='p':
-            self.editDict(variable, name))
-            self.p.pack(side="top")
-
-            self.q = tk.Entry(self, width=5)
-            self.q.insert(0, 'q')
-            self.q.bind('<Button-1>', lambda event, entry=self.q:
-            self.deleteEntry(entry))
-            self.q.bind('<Return>', lambda event, variable=self.q, name='q':
-            self.editDict(variable, name))
-            self.q.pack(side="top")
-
-            self.a = tk.Entry(self, width=5)
-            self.a.insert(0, 'a')
-            self.a.bind('<Button-1>', lambda event, entry=self.a:
-            self.deleteEntry(entry))
-            self.a.bind('<Return>', lambda event, variable=self.a, name='a':
-            self.editDict(variable, name))
-            self.a.pack(side="top")
-
-            self.b = tk.Entry(self, width=5)
-            self.b.insert(0, 'b')
-            self.b.bind('<Button-1>', lambda event, entry=self.b:
-            self.deleteEntry(entry))
-            self.b.bind('<Return>', lambda event, variable=self.b, name='b':
-            self.editDict(variable, name))
-            self.b.pack(side="top")
-
-            self.c = tk.Entry(self, width=5)
-            self.c.insert(0, 'c')
-            self.c.bind('<Button-1>', lambda event, entry=self.c:
-            self.deleteEntry(entry))
-            self.c.bind('<Return>', lambda event, variable=self.c, name='c':
-            self.editDict(variable, name))
-            self.c.pack(side="top")
-
-            self.delta = tk.Entry(self, width=5)
-            self.delta.insert(0, 'delta')
-            self.delta.bind('<Button-1>', lambda event, entry=self.delta:
-            self.deleteEntry(entry))
-            self.delta.bind('<Return>', lambda event, variable=self.delta, name='delta':
-            self.editDict(variable, name))
-            self.delta.pack(side="top")
+            self.namesInDict[k].pack(side="top")
 
     def deleteEntry(self, entry):
         entry.delete(0, 'end')
@@ -295,8 +172,14 @@ class Page4(Page):
     def editDict(self, variable, data):
         self.givenVariables[data] = float(variable.get())
         print(self.givenVariables)
-        result = missingVariables(self.givenVariables)
-        print(result)
+        try:
+            result = missingVariables(self.givenVariables)
+            if not result:
+                print('Not enough data')
+            else:
+                print(result)
+        except NotImplementedError:
+            print('Not enough data')
 
 
 class PageS(Page):
