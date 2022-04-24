@@ -8,6 +8,7 @@ import math
 import PIL.Image
 from MyFunctions import missingVariables, ToBeReplaced, coefficients
 
+
 value = ''
 backgroundcolor = "#33b857"
 
@@ -37,14 +38,14 @@ class Page1(Page):
     def onReturn(self, event):
         global value, main
         value = self.entry1.get()
-        MainView.drawGraph(main)
+        MainView.drawGraph(main, None)
 
 
 class Page2(Page):
     def __init__(self, *args, **kwargs):
         global value, backgroundcolor
         Page.__init__(self, *args, **kwargs)
-        self.label = tk.Label(self, text="This is page 2", bg=backgroundcolor)
+        self.label = tk.Label(self, text="After you enter your equation\n a graph will appear on this page", bg=backgroundcolor, font=self.myFont)
         self.label.pack(side="top", fill="both", expand=True)
         self.x = 0
         self.graph = 0
@@ -61,6 +62,7 @@ class Page3(Page):
         self.givenVariables = {}
         self.namesInDict = dict.fromkeys(['a', 'b', 'c', 'p', 'q', 'x1', 'x2', 'delta'])
         self.CreateEntriesForDataInput()
+        self.result = None
 
     def CreateEntriesForDataInput(self):
         y = 5
@@ -81,15 +83,17 @@ class Page3(Page):
     def editDict(self, variable, data):
         self.givenVariables[data] = float(variable.get())
         try:
-            result = missingVariables(self.givenVariables)
-            if not result:
+            self.result = missingVariables(self.givenVariables)
+            if not self.result:
                 self.label.config(text='Not enough data')
             else:
-                result.update(self.givenVariables)
+                self.result.update(self.givenVariables)
                 try:
+                    result = self.result
                     self.label.config(text=f"a = {result['a']}\nb = {result['b']}\nc = {result['c']}\n"
                                            f"p = {result['p']}\nq = {result['q']}\nx1 = {result['x1']}\n"
                                            f"x2 = {result['x2']}\ndelta = {result['delta']}")
+                    MainView.drawGraph(main, result)
                 except KeyError:
                     self.label.config(text='Not enough data')
         except NotImplementedError:
@@ -134,10 +138,10 @@ class MainView(tk.Frame):
         buttonframe.pack(side="left", fill="y", expand=False)
         self.container.pack(side="top", fill="both", expand=True)
 
-        self.home = ImageTk.PhotoImage(PIL.Image.open('home.png').resize((80, 80)))
-        self.graph = ImageTk.PhotoImage(PIL.Image.open('graph.png').resize((80, 80)))
-        self.equal = ImageTk.PhotoImage(PIL.Image.open('equal.png').resize((80, 80)))
-        self.settings = ImageTk.PhotoImage(PIL.Image.open('settings.png').resize((80, 80)))
+        self.home = ImageTk.PhotoImage(PIL.Image.open(r'icons\home.png').resize((80, 80)))
+        self.graph = ImageTk.PhotoImage(PIL.Image.open(r'icons\graph.png').resize((80, 80)))
+        self.equal = ImageTk.PhotoImage(PIL.Image.open(r'icons\equal.png').resize((80, 80)))
+        self.settings = ImageTk.PhotoImage(PIL.Image.open(r'icons\settings.png').resize((80, 80)))
 
         p1.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         p2.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
@@ -177,22 +181,29 @@ class MainView(tk.Frame):
                              f"x2 = {result['x2']}\ndelta = {result['delta']}")
 
     def changecolor(self, color):
+        # noinspection PyBroadException
         self.p1.label.config(bg=color)
         self.p1.entry1.config(bg=color)
         self.p3.label.config(bg=color)
         self.ps.label.config(bg=color)
         self.ps.entrycolor.config(bg=color)
+        for k in self.p3.namesInDict:
+            self.p3.namesInDict[k].config(bg=color)
         try:
             MainView.overdrawgraph(self, color)
-        except Exception:
+        except SyntaxError:
             self.p2.label.config(bg=color)
 
     def overdrawgraph(self, color):
         global value
         self.p2.x = np.linspace(-10, 10, 300)
         x = self.p2.x
-        value = ToBeReplaced(value)
-        y = eval(value)
+        if self.p3.result is None:
+            value = ToBeReplaced(value)
+            y = eval(value)
+        else:
+            result = self.p3.result
+            y = result['a'] * (x - result['p']) ** 2 + result['q']
         self.p2.fig = plt.figure(facecolor=color, figsize=(14.5, 8.15625))
         self.p2.ax = self.p2.fig.add_subplot(1, 1, 1)
         self.p2.ax.spines['left'].set_position('center')
@@ -208,12 +219,15 @@ class MainView(tk.Frame):
         graph.draw()
         graph.get_tk_widget().place(in_=self.p2, x=-150, y=-50)
 
-    def drawGraph(self):
+    def drawGraph(self, result):
         global value, main
         self.p2.x = np.linspace(-10, 10, 300)
         x = self.p2.x
-        value = ToBeReplaced(value)
-        y = eval(value)
+        if result is None:
+            value = ToBeReplaced(value)
+            y = eval(value)
+        else:
+            y = result['a'] * (x - result['p']) ** 2 + result['q']
         self.p2.fig = plt.figure(facecolor=backgroundcolor, figsize=(14.5, 8.15625))
         self.p2.ax = self.p2.fig.add_subplot(1, 1, 1)
         self.p2.ax.spines['left'].set_position('center')
@@ -232,7 +246,8 @@ class MainView(tk.Frame):
         self.p2.graph = graph
         self.p2.coef = coefficients(value)
         # noinspection PyTypeChecker
-        MainView.answers(main, self.p2.coef)
+        if result is None:
+            MainView.answers(main, self.p2.coef)
 
 
 if __name__ == "__main__":
