@@ -45,7 +45,6 @@ def coefficients(value):
         coef[1] = eval(coef[1].group(1))
         coef[1] = -coef[1]
         coef[2] = eval(place_holder.split(')**2')[1])
-        print(coef)
 
     return coef
 
@@ -69,7 +68,14 @@ def missingVariables(dictOfVariables):
     bEQ = Eq((-2 * var['a'] * var['p']), var['b'])
     cEQ = Eq((var['a'] * var['p'] ** 2 + var['q']), var['c'])
     solution = solve((deltaEQ, x1EQ, x2EQ, pEQ, pEQ2, qEQ, bEQ, cEQ))
-    return solution
+    solution = solution[0]
+    new_dict = {}
+    for k, v in solution.items():
+        try:
+            new_dict[str(k)] = round(float(v), 4)
+        except TypeError:
+            new_dict[str(k)] = v
+    return new_dict
 
 
 def ToBeReplaced(string):

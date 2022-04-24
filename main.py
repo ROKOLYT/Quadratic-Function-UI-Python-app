@@ -56,52 +56,50 @@ class Page2(Page):
 class Page3(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        self.label0 = tk.Label(self, text="", bg=backgroundcolor)
-        self.label0.pack(side="top", fill="both", expand=True)
-        self.label = tk.Label()
-        self.labelVertex = tk.Label()
-        self.label_placed = False
-
-
-class Page4(Page):
-    def __init__(self, *args, **kwargs):
-        Page.__init__(self, *args, **kwargs)
-        self.label = tk.Label(self, text='', bg=backgroundcolor)
+        self.label = tk.Label(self, text='', bg=backgroundcolor, font=self.myFont)
         self.label.pack(side="top", fill="both", expand=True)
         self.givenVariables = {}
         self.namesInDict = dict.fromkeys(['a', 'b', 'c', 'p', 'q', 'x1', 'x2', 'delta'])
         self.CreateEntriesForDataInput()
 
     def CreateEntriesForDataInput(self):
+        y = 5
+        x = 5
         for k in self.namesInDict:
-            self.namesInDict[k] = tk.Entry(self, width=5)
+            self.namesInDict[k] = tk.Entry(self, width=5, font=self.myFont, bg=backgroundcolor)
             self.namesInDict[k].insert(0, str(k))
             self.namesInDict[k].bind('<Button-1>', lambda event, entry=self.namesInDict[k]:
             self.deleteEntry(entry))
             self.namesInDict[k].bind('<Return>', lambda event, variable=self.namesInDict[k], name=str(k):
             self.editDict(variable, name))
-            self.namesInDict[k].pack(side="top")
+            self.namesInDict[k].place(in_=self, x=x, y=y)
+            y += 65
 
     def deleteEntry(self, entry):
         entry.delete(0, 'end')
 
     def editDict(self, variable, data):
         self.givenVariables[data] = float(variable.get())
-        print(self.givenVariables)
         try:
             result = missingVariables(self.givenVariables)
             if not result:
-                print('Not enough data')
+                self.label.config(text='Not enough data')
             else:
-                print(result)
+                result.update(self.givenVariables)
+                try:
+                    self.label.config(text=f"a = {result['a']}\nb = {result['b']}\nc = {result['c']}\n"
+                                           f"p = {result['p']}\nq = {result['q']}\nx1 = {result['x1']}\n"
+                                           f"x2 = {result['x2']}\ndelta = {result['delta']}")
+                except KeyError:
+                    self.label.config(text='Not enough data')
         except NotImplementedError:
-            print('Not enough data')
+            self.label.config(text='Not enough data')
 
 
 class PageS(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        self.label = tk.Label(self, text="This is settings page", bg=backgroundcolor, font=self.myFont)
+        self.label = tk.Label(self, text="Here you can change the background color\n use hex or name of a color", bg=backgroundcolor, font=self.myFont)
         self.label.pack(side="top", fill="both", expand=True)
         self.entrycolor = tk.Entry(self, bg=backgroundcolor)
         self.entrycolor.bind("<Return>", self.setcolor)
@@ -122,14 +120,12 @@ class MainView(tk.Frame):
         p1 = Page1(self)
         p2 = Page2(self)
         p3 = Page3(self)
-        p4 = Page4(self)
         ps = PageS(self)
 
         self.p = p
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
-        self.p4 = p4
         self.ps = ps
 
         buttonframe = tk.Frame(self)
@@ -146,7 +142,6 @@ class MainView(tk.Frame):
         p1.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         p2.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         p3.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
-        p4.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
         ps.place(in_=self.container, x=0, y=0, relwidth=1, relheight=1)
 
         b1 = tk.Button(buttonframe, image=self.home, command=p1.show, bg="#2d7540",
@@ -155,78 +150,36 @@ class MainView(tk.Frame):
                        relief='flat', activebackground="#33b857")
         b3 = tk.Button(buttonframe, image=self.equal, command=p3.show, bg="#2d7540",
                        relief='flat', activebackground="#33b857")
-        b4 = tk.Button(buttonframe, text='Page 4', command=p4.show, bg="#2d7540",
-                       relief='flat', activebackground="#33b857")
         bs = tk.Button(buttonframe, image=self.settings, command=ps.show, bg="#2d7540",
                        relief='flat', activebackground="#33b857")
 
         b1.pack(side="top")
         b2.pack(side="top")
         b3.pack(side="top")
-        b4.pack(side="top")
         bs.pack(side="bottom")
         p1.show()
 
     def answers(self, coef):
         global value
+        dict_with_coefs = {}
         if coef[3] is False:
-            a = coef[0]
-            b = -2 * a * coef[1]
-            c = coef[1] ** 2 * a + coef[2]
+            dict_with_coefs['a'] = coef[0]
+            dict_with_coefs['b'] = -2 * dict_with_coefs['a'] * coef[1]
+            dict_with_coefs['c'] = coef[1] ** 2 * dict_with_coefs['a'] + coef[2]
         else:
-            a = coef[0]
-            b = coef[1]
-            c = coef[2]
-        delta = b ** 2 - 4 * a * c
-        if delta > 0:
-            x1 = (-b - math.sqrt(delta)) / (2 * a)
-            x2 = (-b + math.sqrt(delta)) / (2 * a)
-            p = (x1 + x2) / 2
-            q = (-delta) / (4 * a)
-            print(f'Vertex ({p} , {q})')
-        elif delta == 0:
-            x1 = (-b) / (2 * a)
-            x2 = 'n/a'
-            p = x1
-            q = (-delta) / (4 * a)
-            print(f'Vertex ({p} , {q})')
-
-        else:
-            x1 = 'n/a'
-            x2 = 'n/a'
-            p = (-b) / (2 * a)
-            q = (-delta) / (4 * a)
-            print(f'Vertex ({p} , {q})')
-        try:
-            x1 = round(float(x1), 4)
-        except Exception:
-            pass
-        try:
-            x2 = round(float(x2), 4)
-        except Exception:
-            pass
-        if self.p3.label_placed is False:
-            self.p3.label = tk.Label(self.p3, text=f'x1 = {x1} and x2 = {x2}\n delta = {delta}', bg=backgroundcolor,
-                                     font=self.p.myFont)
-            self.p3.label.pack(side="top", fill="both", expand=True)
-            self.p3.labelVertex = tk.Label(self.p3, text=f'Vertex ({p} , {q})', bg=backgroundcolor, font=self.p.myFont)
-            self.p3.labelVertex.pack(side="top", fill="both", expand=True)
-            self.p3.label_placed = True
-        else:
-            self.p3.label.destroy()
-            self.p3.labelVertex.destroy()
-            self.p3.label = tk.Label(self.p3, text=f'x1 = {x1} and x2 = {x2}\n delta = {delta}', bg=backgroundcolor,
-                                     font=self.p.myFont)
-            self.p3.label.pack(side="top", fill="both", expand=True)
-            self.p3.labelVertex = tk.Label(self.p3, text=f'Vertex ({p} , {q})', bg=backgroundcolor, font=self.p.myFont)
-            self.p3.labelVertex.pack(side="top", fill="both", expand=True)
+            dict_with_coefs['a'] = coef[0]
+            dict_with_coefs['b'] = coef[1]
+            dict_with_coefs['c'] = coef[2]
+        result = missingVariables(dict_with_coefs)
+        result.update(dict_with_coefs)
+        self.p3.label.config(text=f"a = {result['a']}\nb = {result['b']}\nc = {result['c']}\n"
+                             f"p = {result['p']}\nq = {result['q']}\nx1 = {result['x1']}\n"
+                             f"x2 = {result['x2']}\ndelta = {result['delta']}")
 
     def changecolor(self, color):
         self.p1.label.config(bg=color)
         self.p1.entry1.config(bg=color)
-        self.p3.label0.config(bg=color)
         self.p3.label.config(bg=color)
-        self.p3.labelVertex.config(bg=color)
         self.ps.label.config(bg=color)
         self.ps.entrycolor.config(bg=color)
         try:
