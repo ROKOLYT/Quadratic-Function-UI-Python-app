@@ -59,6 +59,7 @@ def missingVariables(dictOfVariables):
     symbols = dict(a=sym('a'), b=sym('b'), c=sym('c'), p=sym('p'), q=sym('q'), x1=sym('x1'), x2=sym('x2'),
                    delta=sym('delta'))
     var = mergeDicts(symbols, dictOfVariables)
+
     deltaEQ = Eq((var['b'] ** 2 - 4 * var['a'] * var['c']), var['delta'])
     x1EQ = Eq(((-var['b'] - sqrt(var['delta'])) / (2 * var['a'])), var['x1'])
     x2EQ = Eq(((-var['b'] + sqrt(var['delta'])) / (2 * var['a'])), var['x2'])
@@ -67,6 +68,7 @@ def missingVariables(dictOfVariables):
     qEQ = Eq(((-var['delta']) / (4 * var['a'])), var['q'])
     bEQ = Eq((-2 * var['a'] * var['p']), var['b'])
     cEQ = Eq((var['a'] * var['p'] ** 2 + var['q']), var['c'])
+
     solution = solve((deltaEQ, x1EQ, x2EQ, pEQ, pEQ2, qEQ, bEQ, cEQ))
     solution = solution[0]
     new_dict = {}
@@ -85,4 +87,9 @@ def ToBeReplaced(string):
     for i in range(len(disallowed_characters)):
         string = string.replace(disallowed_characters[i], equivalent[i])
     return string
+
+
+def deleteEntry(entry):
+    entry.delete(0, 'end')
+
 

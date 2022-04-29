@@ -4,10 +4,9 @@ import tkinter.font as FontTk
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import math
+from math import sqrt
 import PIL.Image
-from MyFunctions import missingVariables, ToBeReplaced, coefficients
-
+from MyFunctions import missingVariables, ToBeReplaced, coefficients, deleteEntry
 
 value = ''
 backgroundcolor = "#33b857"
@@ -45,7 +44,8 @@ class Page2(Page):
     def __init__(self, *args, **kwargs):
         global value, backgroundcolor
         Page.__init__(self, *args, **kwargs)
-        self.label = tk.Label(self, text="After you enter your equation\n a graph will appear on this page", bg=backgroundcolor, font=self.myFont)
+        self.label = tk.Label(self, text="After you enter your equation\n a graph will appear on this page",
+                              bg=backgroundcolor, font=self.myFont)
         self.label.pack(side="top", fill="both", expand=True)
         self.x = 0
         self.graph = 0
@@ -71,14 +71,11 @@ class Page3(Page):
             self.namesInDict[k] = tk.Entry(self, width=5, font=self.myFont, bg=backgroundcolor)
             self.namesInDict[k].insert(0, str(k))
             self.namesInDict[k].bind('<Button-1>', lambda event, entry=self.namesInDict[k]:
-            self.deleteEntry(entry))
+            deleteEntry(entry))
             self.namesInDict[k].bind('<Return>', lambda event, variable=self.namesInDict[k], name=str(k):
             self.editDict(variable, name))
             self.namesInDict[k].place(in_=self, x=x, y=y)
             y += 65
-
-    def deleteEntry(self, entry):
-        entry.delete(0, 'end')
 
     def editDict(self, variable, data):
         self.givenVariables[data] = float(variable.get())
@@ -103,7 +100,8 @@ class Page3(Page):
 class PageS(Page):
     def __init__(self, *args, **kwargs):
         Page.__init__(self, *args, **kwargs)
-        self.label = tk.Label(self, text="Here you can change the background color\n use hex or name of a color", bg=backgroundcolor, font=self.myFont)
+        self.label = tk.Label(self, text="Here you can change the background color\n use hex or name of a color",
+                              bg=backgroundcolor, font=self.myFont)
         self.label.pack(side="top", fill="both", expand=True)
         self.entrycolor = tk.Entry(self, bg=backgroundcolor)
         self.entrycolor.bind("<Return>", self.setcolor)
@@ -177,8 +175,8 @@ class MainView(tk.Frame):
         result = missingVariables(dict_with_coefs)
         result.update(dict_with_coefs)
         self.p3.label.config(text=f"a = {result['a']}\nb = {result['b']}\nc = {result['c']}\n"
-                             f"p = {result['p']}\nq = {result['q']}\nx1 = {result['x1']}\n"
-                             f"x2 = {result['x2']}\ndelta = {result['delta']}")
+                                  f"p = {result['p']}\nq = {result['q']}\nx1 = {result['x1']}\n"
+                                  f"x2 = {result['x2']}\ndelta = {result['delta']}")
 
     def changecolor(self, color):
         # noinspection PyBroadException
@@ -204,6 +202,9 @@ class MainView(tk.Frame):
         else:
             result = self.p3.result
             y = result['a'] * (x - result['p']) ** 2 + result['q']
+        self.CreateGraph(color, x, y)
+
+    def CreateGraph(self, color, x, y):
         self.p2.fig = plt.figure(facecolor=color, figsize=(14.5, 8.15625))
         self.p2.ax = self.p2.fig.add_subplot(1, 1, 1)
         self.p2.ax.spines['left'].set_position('center')
@@ -228,22 +229,7 @@ class MainView(tk.Frame):
             y = eval(value)
         else:
             y = result['a'] * (x - result['p']) ** 2 + result['q']
-        self.p2.fig = plt.figure(facecolor=backgroundcolor, figsize=(14.5, 8.15625))
-        self.p2.ax = self.p2.fig.add_subplot(1, 1, 1)
-        self.p2.ax.spines['left'].set_position('center')
-        self.p2.ax.spines['bottom'].set_position('zero')
-        self.p2.ax.spines['right'].set_color('none')
-        self.p2.ax.spines['top'].set_color('none')
-        self.p2.ax.xaxis.set_ticks_position('bottom')
-        self.p2.ax.yaxis.set_ticks_position('left')
-        self.p2.ax.set_facecolor(backgroundcolor)
-
-        plt.plot(x, y)
-        plt.grid()
-        graph = FigureCanvasTkAgg(self.p2.fig, master=self.p2)
-        graph.draw()
-        graph.get_tk_widget().place(in_=self.p2, x=-150, y=-50)
-        self.p2.graph = graph
+        self.CreateGraph(backgroundcolor, x, y)
         self.p2.coef = coefficients(value)
         # noinspection PyTypeChecker
         if result is None:
