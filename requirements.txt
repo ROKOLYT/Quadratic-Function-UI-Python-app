@@ -2,5 +2,5 @@
 Pillow
 matplotlib
 numpy
-tkinter
+tk
 sympy
