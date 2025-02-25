@@ -1,0 +1,6 @@
+# Was looking through my old projects and realized this one didn't have requirements
+Pillow
+matplotlib
+numpy
+tkinter
+sympy
